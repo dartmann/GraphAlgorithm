@@ -1,26 +1,34 @@
 package de.davidartmann.studium.fwpm.graphalgorithm;
 
+import java.util.ArrayList;
+
 
 public class Main {
 
 	public static void main(String[] args) {
-		Graph graph = new Graph();
-		/*
-		System.out.println("Neighbours Test");
-		for (String s : graph.neighbours("d")) {
-			System.out.println(s);
-		}
-		System.out.println("\nCounting edges Test");
-		System.out.println(graph.numEdges("a"));
+		ArrayList<Vertex> vertexes = new ArrayList<Vertex>();
+		vertexes.add(new Vertex("v1"));
+		vertexes.add(new Vertex("v2"));
+		vertexes.add(new Vertex("v3"));
 		
-		System.out.println("\nAdjacent Test");
-		System.out.println(graph.adjacent("a", "e"));
-		
-		System.out.println("\nAddVertice Test");
-		System.out.println(graph.addVertice("e"));
+		Graph graph = new Graph(vertexes);
+		System.out.println(graph.countVertices());
+		System.out.println(graph.countEdges());
+		System.out.println(graph.addEdge(new Edge(new Vertex("v1"), new Vertex("v2"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v1"), new Vertex("v3"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v2"), new Vertex("v3"))));
+		System.out.println(graph.countEdges());
+		/*error checking
+		System.out.println(graph.addEdge(new Edge(new Vertex("v1"), new Vertex("v2"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v2"), new Vertex("v1"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v1"), new Vertex("v3"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v3"), new Vertex("v1"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v2"), new Vertex("v3"))));
+		System.out.println(graph.addEdge(new Edge(new Vertex("v3"), new Vertex("v2"))));
 		*/
-		System.out.println("\nAddEdge Test");
-		System.out.println(graph.addEdge("b", "e"));
+		for(Vertex v : graph.getNeighbours(new Vertex("v2"))) {
+			System.out.println(v.getName());	
+		}
 	}
 
 }
