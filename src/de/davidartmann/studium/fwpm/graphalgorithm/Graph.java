@@ -239,7 +239,7 @@ public class Graph {
 	 * @param vertex
 	 * @return
 	 */
-	public ArrayList<Edge> removeEdgesByVertice(Vertex vertex) {
+	private ArrayList<Edge> removeEdgesByVertice(Vertex vertex) {
 		ArrayList<Edge> removedEdges = new ArrayList<Edge>();
 		for(Edge edge : edges) {
 			if (edge.getVertex().getName().equals(vertex.getName()) || 
@@ -284,7 +284,7 @@ public class Graph {
 	 */
 	public StringBuilder exportGraphToViz() {
 		StringBuilder stringBuilder = new StringBuilder("graph "+this.getName()+" {\n");
-		//TODO: maybe also the vertexes?
+		// maybe also the vertexes?
 		for(Edge edge : this.edges) {
 			stringBuilder.append("\t"+edge.getVertex().getName()+" -- "+edge.getVertex2().getName()+";\n");
 		}
@@ -354,15 +354,18 @@ public class Graph {
 	 * each column and row has either 1 or 0 standing for an edge between those two vertices.
 	 * @return
 	 */
-	public boolean[][] getAdjacencyMatrix() {
-		boolean[][] matrix = new boolean [vertices.size()][vertices.size()];
-		for(int i = 0; i < vertices.size(); i++) {
-			for(int j = 0; j < vertices.size(); j++) {
-				matrix[i][j] = checkAdjacency(vertices.get(i), vertices.get(j));
-				System.out.println(matrix[i][j]);
+	public Adjacencymatrix getAdjacencyMatrix() {
+		int numberOfVertives = vertices.size();
+		Adjacencymatrix adjacencymatrix = new Adjacencymatrix(numberOfVertives, getName(), getVertices());
+		boolean[][] cache = adjacencymatrix.getMatrix();
+		for(int i = 0; i < numberOfVertives; i++) {
+			for(int j = 0; j < numberOfVertives; j++) {
+				boolean isAdjacent = checkAdjacency(vertices.get(i), vertices.get(j));
+				cache[i][j] = isAdjacent;
 			}
 		}
-		return matrix;
+		adjacencymatrix.setMatrix(cache);
+		return adjacencymatrix;
 	}
 	
 	/**
@@ -372,7 +375,17 @@ public class Graph {
 	 * @return
 	 */
 	public Graph getComplement() {
-		//TODO
+		boolean[][] cache = getAdjacencyMatrix().getMatrix();
+		for(int i = 0; i < cache.length; i++) {
+			for(int j = 0; j < cache[i].length; j++) {
+				if (cache[i][j] == true) {
+					cache[i][j] = false;
+				} else {
+					cache[i][j] = true;
+				}
+			}
+		}
+		getAdjacencyMatrix().setMatrix(cache);
 		return null;
 	}
 	

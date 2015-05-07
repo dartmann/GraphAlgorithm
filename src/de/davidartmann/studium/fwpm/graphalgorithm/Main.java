@@ -55,8 +55,9 @@ public class Main {
 		graph2.addEdge(new Edge(new Vertex("v4"), new Vertex("v7")));
 //		System.out.println("Edges: "+graph2.countEdges()+" "+"Vertices: "+graph2.countVertices());
 //		System.out.println("Contains Cycle: "+graph2.hasCycle());
-//		graph2.getAdjacencyMatrix();
-		System.out.println(Graph.createComplete(3).isComplete());
+		System.out.println(graph2.getAdjacencyMatrix());
+//		System.out.println(graph2.getComplement().getAdjacencyMatrix().toString());
+//		System.out.println(Graph.createComplete(3).isComplete());
 	}
 
 }
