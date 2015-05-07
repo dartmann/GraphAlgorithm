@@ -18,9 +18,18 @@ public class Graph {
 	private static final String FILEPATH = "resource/graphData.dot";
 	private static final File FILE = new File(FILEPATH);
 	
-	private ArrayList<Vertex> vertexes = new ArrayList<Vertex>();
-	private ArrayList<Edge> edges = new ArrayList<Edge>();
+	private ArrayList<Vertex> vertices;
+	private ArrayList<Edge> edges;
 	private String name;
+	
+	/**
+	 * empty constructor
+	 */
+	public Graph() {
+		this.edges = new ArrayList<Edge>();
+		this.vertices = new ArrayList<Vertex>();
+		this.name = String.valueOf(new Date().getTime());
+	}
 	
 	/**
 	 * Constructor to add {@link Vertex}es, {@link Edge}s without a given name.
@@ -28,7 +37,11 @@ public class Graph {
 	 * @param vertexes
 	 */
 	public Graph(ArrayList<Vertex> vertexes) {
-		this.vertexes.addAll(vertexes);
+		this.vertices = new ArrayList<Vertex>();
+		for(Vertex vertex : vertexes) {
+			this.addVertex(vertex);
+		}
+		this.edges = new ArrayList<Edge>();
 		this.name = String.valueOf(new Date().getTime());
 	}
 	
@@ -37,7 +50,10 @@ public class Graph {
 	 * @param vertexes
 	 */
 	public Graph(ArrayList<Vertex> vertexes, String name) {
-		this.vertexes.addAll(vertexes);
+		for(Vertex vertex : vertexes) {
+			this.addVertex(vertex);
+		}
+		this.edges = new ArrayList<Edge>();
 		this.name = name;
 	}
 	
@@ -48,8 +64,12 @@ public class Graph {
 	 * @param edges
 	 */
 	public Graph(ArrayList<Vertex> vertexes, ArrayList<Edge> edges) {
-		this.vertexes.addAll(vertexes);
-		this.edges.addAll(edges);
+		for(Vertex vertex : vertexes) {
+			this.addVertex(vertex);
+		}
+		for(Edge edge : edges) {
+			this.addEdge(edge);
+		}
 		this.name = String.valueOf(new Date().getTime());
 	}
 	
@@ -59,11 +79,25 @@ public class Graph {
 	 * @param edges
 	 */
 	public Graph(ArrayList<Vertex> vertexes, ArrayList<Edge> edges, String name) {
-		this.vertexes.addAll(vertexes);
-		this.edges.addAll(edges);
+		for(Vertex vertex : vertexes) {
+			this.addVertex(vertex);
+		}
+		for(Edge edge : edges) {
+			this.addEdge(edge);
+		}
 		this.name = name;
 	}
 	
+	/**
+	 * Constructor for a given {@link Graph}.
+	 * @param graph
+	 */
+	public Graph(Graph graph) {
+		this.edges = graph.getEdges();
+		this.vertices = graph.getVertices();
+		this.name = graph.getName();
+	}
+
 	/**
 	 * Method to retreive all neighbours of a specific vertice.
 	 * @param vertex
@@ -73,6 +107,9 @@ public class Graph {
 		ArrayList<Vertex> neighbours = new ArrayList<Vertex>();
 		for(Edge e : edges) {
 			if (e.getVertex().getName().equals(vertex.getName())) {
+				neighbours.add(e.getVertex());
+			}
+			if (e.getVertex2().getName().equals(vertex.getName())) {
 				neighbours.add(e.getVertex2());
 			}
 		}
@@ -84,7 +121,7 @@ public class Graph {
 	 * @return
 	 */
 	public int countVertices() {
-		return vertexes.size();
+		return vertices.size();
 	}
 	
 	/**
@@ -93,7 +130,7 @@ public class Graph {
 	 * @return
 	 */
 	public boolean containsVertex(Vertex vertex) {
-		for(Vertex v : vertexes) {
+		for(Vertex v : vertices) {
 			if (v.getName().equals(vertex.getName())) {
 				return true;
 			}
@@ -107,7 +144,15 @@ public class Graph {
 	 * @return
 	 */
 	public boolean containsEdge(Edge edge) {
-		//TODO
+		for(Edge e : edges) {
+			if ((e.getVertex().getName().equals(edge.getVertex().getName()) && 
+					e.getVertex2().getName().equals(edge.getVertex2().getName())) 
+				|| 
+				(e.getVertex().getName().equals(edge.getVertex2().getName()) && 
+						e.getVertex2().getName().equals(edge.getVertex().getName()))) {
+				return true;			
+			}
+		}
 		return false;
 	}
 	
@@ -120,25 +165,26 @@ public class Graph {
 	}
 	
 	/**
-	 * Method to add a new Vertex to the {@link #vertexes}.
+	 * Method to add a new Vertex to the {@link #vertices}.
 	 * @param vertex
 	 */
 	public boolean addVertex(Vertex vertex) {
 		if (!containsVertex(vertex)) {
-			vertexes.add(vertex);
+			vertices.add(vertex);
 			return true;
 		}
 		return false;
 	}
 	
 	/**
-	 * Method to remove a vertex from the {@link #vertexes}.
+	 * Method to remove a vertex from the {@link #vertices}.
 	 * @param vertex
 	 * @return
 	 */
 	public boolean removeVertex(Vertex vertex) {
 		if (containsVertex(vertex)) {
-			vertexes.remove(vertex);
+			vertices.remove(vertex);
+			removeEdgesByVertice(vertex);
 			return true;
 		}
 		return false;
@@ -151,29 +197,32 @@ public class Graph {
 	 * @return
 	 */
 	public boolean addEdge(Edge edge) {
-		if (edges.isEmpty()) {
-			edges.add(edge);
-			return true;
-		} else {
-			for(Edge e : edges) {
-				// exactly identically
-				if (edge.getVertex().getName().equals(e.getVertex().getName()) && 
-						edge.getVertex2().getName().equals(e.getVertex2().getName())) {
-					return false;
+		if (!edge.getVertex().getName().equals(edge.getVertex2().getName())) {
+			if (edges.isEmpty()) {
+				edges.add(edge);
+				return true;
+			} else {
+				for(Edge e : edges) {
+					// exactly identically
+					if (edge.getVertex().getName().equals(e.getVertex().getName()) && 
+							edge.getVertex2().getName().equals(e.getVertex2().getName())) {
+						return false;
+					}
+					// switched positions
+					if (edge.getVertex().getName().equals(e.getVertex2().getName()) &&
+							edge.getVertex2().getName().equals(e.getVertex().getName())) {
+						return false;
+					}
 				}
-				// switched positions
-				if (edge.getVertex().getName().equals(e.getVertex2().getName()) &&
-						edge.getVertex2().getName().equals(e.getVertex().getName())) {
-					return false;
-				}
+				edges.add(edge);
+				return true;
 			}
-			edges.add(edge);
-			return true;
 		}
+		return false;
 	}
 	
 	/**
-	 * Method to remove an {@link Edge} from the {@link #edges}
+	 * Method to remove an {@link Edge} from the {@link #edges}.
 	 * @param edge
 	 * @return
 	 */
@@ -186,19 +235,31 @@ public class Graph {
 	}
 	
 	/**
+	 * Method to remove all {@link Edge}s in dependency of a given {@link Vertex}.
+	 * @param vertex
+	 * @return
+	 */
+	public ArrayList<Edge> removeEdgesByVertice(Vertex vertex) {
+		ArrayList<Edge> removedEdges = new ArrayList<Edge>();
+		for(Edge edge : edges) {
+			if (edge.getVertex().getName().equals(vertex.getName()) || 
+					edge.getVertex2().getName().equals(vertex.getName())) {
+				edges.remove(vertex);
+				removedEdges.add(edge);
+			}
+		}
+		return removedEdges;
+		
+	}
+	
+	/**
 	 * Method to check if two {@link Vertex}es have an relation due an common {@link Edge}.
 	 * @param vertex
 	 * @param vertex2
 	 * @return
 	 */
 	public boolean checkAdjacency(Vertex vertex, Vertex vertex2) {
-		for(Edge e : edges) {
-			if (e.getVertex().getName().equals(vertex.getName()) 
-					&& e.getVertex2().getName().equals(vertex2.getName())) {
-				return true;
-			}
-		}
-		return false;
+		return containsEdge(new Edge(vertex, vertex2));
 	}
 	
 	/**
@@ -208,11 +269,11 @@ public class Graph {
 	 * @return
 	 */
 	public Graph union(Graph graph) {
-		Graph union = new Graph(this.vertexes, this.edges, "G_"+new Date().getTime());
+		Graph union = new Graph(this.vertices, this.edges, "G_"+new Date().getTime());
 		for(Edge edge : graph.edges) {
 			union.addEdge(edge);
 		}
-		for(Vertex vertex : graph.vertexes) {
+		for(Vertex vertex : graph.vertices) {
 			union.addVertex(vertex);
 		}
 		return union;
@@ -241,21 +302,94 @@ public class Graph {
 	 * It uses topological sort to detect all cycles.
 	 * @return
 	 */
-	public boolean containsCycle() {
-		// first we reduce the amount of possible cycles
-		ArrayList<Vertex> possibleCycleMembers = new ArrayList<Vertex>();
-		for(Vertex vertex : vertexes) {
-			if (getNeighbours(vertex).size() >= 2) {
-				possibleCycleMembers.add(vertex);
+	public boolean hasCycle() {
+		Graph save = new Graph(this);
+		save.checkCycle();
+		return save.countEdges() > 1;
+	}
+	
+	/**
+	 * helper method for {@link #hasCycle()}.
+	 */
+	private void checkCycle() {
+		for(int i = 0; i < vertices.size(); i++) {
+			Vertex v = vertices.get(i);
+			if(getNeighbours(v).size() <= 1) {
+				// remove vertex from every edge
+				for(int j = 0; j < edges.size(); j++) {
+					if (edges.get(j).getVertex().getName().equals(v.getName()) || 
+							edges.get(j).getVertex2().getName().equals(v.getName())) {
+						edges.remove(j);
+					}
+				}
+			} else {
+				System.out.println(vertices.get(i).getName()+" hat Nachbarn: "+getNeighbours(vertices.get(i)).size());
 			}
 		}
-		ArrayList<Vertex> stack = new ArrayList<Vertex>();
-		for(Edge edge : edges) {
-			// mark first edge target as visited
-			stack.add(edge.getVertex2());
-			
-		}
+		System.out.println("Zum Ende: "+countEdges());
+	}
+	
+	/**
+	 * Method to check if the {@link Graph} is bipartite.
+	 * This means, it has two partitions. 
+	 * The Vertices in those partitions do not have a common edge inside their partition.
+	 * @return
+	 */
+	public boolean isBipartite() {
 		return false;
+	}
+	
+	/**
+	 * Method to check if the {@link Graph} is complete.
+	 * This is done by checking, if it contains (n*(n-1))/2 edges,
+	 * where n represents the amount of edges.
+	 * @return
+	 */
+	public boolean isComplete() {
+		return ((vertices.size()*(vertices.size()-1))/2) == edges.size();
+	}
+	
+	/**
+	 * Method to return an adjacency matrix in form of an two dimensional int array.
+	 * each column and row has either 1 or 0 standing for an edge between those two vertices.
+	 * @return
+	 */
+	public boolean[][] getAdjacencyMatrix() {
+		boolean[][] matrix = new boolean [vertices.size()][vertices.size()];
+		for(int i = 0; i < vertices.size(); i++) {
+			for(int j = 0; j < vertices.size(); j++) {
+				matrix[i][j] = checkAdjacency(vertices.get(i), vertices.get(j));
+				System.out.println(matrix[i][j]);
+			}
+		}
+		return matrix;
+	}
+	
+	/**
+	 * Method for returning a complemented version of this {@link Graph}.
+	 * This means, all edges which exists, get destroyed and all not existing get created.
+	 * In other words, my adjency matrix gets inverted.
+	 * @return
+	 */
+	public Graph getComplement() {
+		//TODO
+		return null;
+	}
+	
+	/**
+	 * Simple getter for {@link #edges}.
+	 * @return
+	 */
+	public ArrayList<Edge> getEdges() {
+		return this.edges;
+	}
+	
+	/**
+	 * Simple getter for {@link #vertices}.
+	 * @return
+	 */
+	public ArrayList<Vertex> getVertices() {
+		return this.vertices;
 	}
 	
 	/**
@@ -264,16 +398,14 @@ public class Graph {
 	 * @param numberOfVertexes
 	 * @return
 	 */
-	public static Graph cycle(int numberOfVertexes) {
-		ArrayList<Vertex> vertexes = new ArrayList<Vertex>();
+	public static Graph createCycle(int numberOfVertices) {
+		ArrayList<Vertex> vertexes = createVerticesByNumber(numberOfVertices);
 		ArrayList<Edge> edges = new ArrayList<Edge>();
-		for(int i = 0; i < numberOfVertexes; i++) {
-			vertexes.add(new Vertex(String.valueOf(i)));
-		}
 		for(int i = 0; i < vertexes.size()-1; i++) {
 			edges.add(new Edge(new Vertex("v"+i), new Vertex("v"+(i+1))));
 		}
-		edges.add(new Edge(new Vertex(String.valueOf("v"+(vertexes.size()-1))), new Vertex("v0")));
+		edges.add(new Edge(new Vertex(String.valueOf("v"+(vertexes.size()-1))), 
+				new Vertex("v0")));
 		Graph graph = new Graph(vertexes, edges);
 		return graph;
 	}
@@ -284,44 +416,42 @@ public class Graph {
 	 * @param i
 	 * @return
 	 */
-	public static Graph getComplete(int numberOfVertexes) {
-		ArrayList<Vertex> vertexes = new ArrayList<Vertex>();
-		ArrayList<Edge> edges = new ArrayList<Edge>();
-		for(int i = 0; i < numberOfVertexes-1; i++) {
-			vertexes.add(new Vertex("v"+i));
-		}
-		for(Vertex vertex : vertexes) {
-			Integer notAllowed = Integer.valueOf(vertex.getName().substring(1));
-			for(int i = 0; i < numberOfVertexes; i++) {
-				if (i != notAllowed) {
-					//containsEdge(), when finished
-					edges.add(new Edge(vertex, new Vertex("v"+i)));
+	public static Graph createComplete(int numberOfVertices) {
+		Graph graph = new Graph();
+		for(int i = 0; i < numberOfVertices; i++) {
+			graph.addVertex(new Vertex("v"+i));
+			for(int j = 0; j < graph.getVertices().size(); j++) {
+				Edge edge = new Edge(graph.getVertices().get(j), new Vertex("v"+i));
+				if (!graph.containsEdge(edge)) {
+					graph.addEdge(edge);
 				}
 			}
-					
 		}
-		
-		Graph graph = new Graph(vertexes, edges);
 		return graph;
 	}
 	
 	/**
 	 * Method to create a Path with the given number of {@link Vertex}es.
 	 * A Path has no cycles and every {@link Vertex} has only never more than two neighbours.
-	 * @param numberOfVertexes
+	 * @param numberOfVertices
 	 * @return
 	 */
-	public static Graph createPath(int numberOfVertexes) {
-		ArrayList<Vertex> vertexes = new ArrayList<Vertex>();
+	public static Graph createPath(int numberOfVertices) {
+		ArrayList<Vertex> vertexes = createVerticesByNumber(numberOfVertices);
 		ArrayList<Edge> edges = new ArrayList<Edge>();
-		for(int i = 0; i < numberOfVertexes; i++) {
-			vertexes.add(new Vertex(String.valueOf(i)));
-		}
 		for(int i = 0; i < vertexes.size()-1; i++) {
 			edges.add(new Edge(new Vertex("v"+i), new Vertex("v"+(i+1))));
 		}
 		Graph graph = new Graph(vertexes, edges);
 		return graph;
+	}
+	
+	private static ArrayList<Vertex> createVerticesByNumber(int numberOfVertices) {
+		ArrayList<Vertex> list = new ArrayList<Vertex>();
+		for(int i = 0; i < numberOfVertices; i++) {
+			list.add(new Vertex(String.valueOf("v"+i)));
+		}
+		return list;
 	}
 
 	/**
